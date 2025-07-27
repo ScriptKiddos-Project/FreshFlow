@@ -1,0 +1,17 @@
+{
+  "name": "freshflow-production",
+  "version": "1.0.0",
+  "main": "index.js",
+  "workspaces": [
+    "admin",
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
