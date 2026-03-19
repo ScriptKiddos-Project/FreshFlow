@@ -1,0 +1,1229 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "FreshFlow API",
+    "description": "Dynamic Pricing & Expiry Prevention Network for Street Food Vendors",
+    "version": "1.0.0",
+    "contact": {
+      "name": "FreshFlow Support",
+      "email": "support@freshflow.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Development server"
+    },
+    {
+      "url": "https://api.freshflow.com/api",
+      "description": "Production server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "john@example.com"
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^[6-9]\\d{9}$",
+            "example": "9876543210"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["vendor", "admin"],
+            "example": "vendor"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "inactive", "suspended"],
+            "example": "active"
+          },
+          "location": {
+            "type": "object",
+            "properties": {
+              "address": {
+                "type": "string",
+                "example": "123 Street Name, Mumbai"
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "example": [72.8777, 19.0760]
+              },
+              "pincode": {
+                "type": "string",
+                "example": "400001"
+              }
+            }
+          },
+          "businessDetails": {
+            "type": "object",
+            "properties": {
+              "businessName": {
+                "type": "string",
+                "example": "Fresh Foods Stall"
+              },
+              "businessType": {
+                "type": "string",
+                "enum": ["street_food", "restaurant", "grocery", "wholesale"],
+                "example": "street_food"
+              },
+              "gstNumber": {
+                "type": "string",
+                "example": "27AAAAA0000A1Z5"
+              }
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Ingredient": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "name": {
+            "type": "string",
+            "example": "Fresh Tomatoes"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["vegetables", "fruits", "grains", "spices", "dairy", "meat", "other"],
+            "example": "vegetables"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0,
+            "example": 10
+          },
+          "unit": {
+            "type": "string",
+            "enum": ["kg", "grams", "liters", "pieces", "dozen"],
+            "example": "kg"
+          },
+          "basePrice": {
+            "type": "number",
+            "minimum": 0,
+            "example": 50
+          },
+          "currentPrice": {
+            "type": "number",
+            "minimum": 0,
+            "example": 45
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["available", "low_stock", "out_of_stock", "expired"],
+            "example": "available"
+          },
+          "vendorId": {
+            "type": "string",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "description": {
+            "type": "string",
+            "example": "Fresh red tomatoes perfect for cooking"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            },
+            "example": ["https://example.com/tomato.jpg"]
+          },
+          "location": {
+            "type": "object",
+            "properties": {
+              "address": {
+                "type": "string"
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "pincode": {
+                "type": "string"
+              }
+            }
+          },
+          "priceHistory": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "price": {
+                  "type": "number"
+                },
+                "timestamp": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "buyerId": {
+            "type": "string",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "sellerId": {
+            "type": "string",
+            "example": "507f1f77bcf86cd799439012"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ingredientId": {
+                  "type": "string"
+                },
+                "ingredientName": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "number"
+                },
+                "pricePerUnit": {
+                  "type": "number"
+                },
+                "totalPrice": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "totalAmount": {
+            "type": "number",
+            "example": 250
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "accepted", "rejected", "completed", "cancelled"],
+            "example": "pending"
+          },
+          "deliveryAddress": {
+            "type": "object",
+            "properties": {
+              "address": {
+                "type": "string"
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "pincode": {
+                "type": "string"
+              }
+            }
+          },
+          "rating": {
+            "type": "object",
+            "properties": {
+              "rating": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 5
+              },
+              "review": {
+                "type": "string"
+              },
+              "ratedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "example": "Error message"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register a new user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password", "phone", "role"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "john@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "SecurePass123!"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "pattern": "^[6-9]\\d{9}$",
+                    "example": "9876543210"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["vendor"],
+                    "example": "vendor"
+                  },
+                  "location": {
+                    "type": "object",
+                    "required": ["address", "coordinates", "pincode"],
+                    "properties": {
+                      "address": {
+                        "type": "string",
+                        "example": "123 Street Name, Mumbai"
+                      },
+                      "coordinates": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "example": [72.8777, 19.0760]
+                      },
+                      "pincode": {
+                        "type": "string",
+                        "example": "400001"
+                      }
+                    }
+                  },
+                  "businessDetails": {
+                    "type": "object",
+                    "properties": {
+                      "businessName": {
+                        "type": "string",
+                        "example": "Fresh Foods Stall"
+                      },
+                      "businessType": {
+                        "type": "string",
+                        "enum": ["street_food", "restaurant", "grocery", "wholesale"],
+                        "example": "street_food"
+                      },
+                      "gstNumber": {
+                        "type": "string",
+                        "example": "27AAAAA0000A1Z5"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        },
+                        "token": {
+                          "type": "string",
+                          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                        },
+                        "refreshToken": {
+                          "type": "string",
+                          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "User already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Login user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "john@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "SecurePass123!"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        },
+                        "token": {
+                          "type": "string"
+                        },
+                        "refreshToken": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get current user",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current user data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ingredients": {
+      "get": {
+        "tags": ["Ingredients"],
+        "summary": "Get all ingredients with filters",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "Page number"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Items per page"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["vegetables", "fruits", "grains", "spices", "dairy", "meat", "other"]
+            },
+            "description": "Filter by category"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search by name"
+          },
+          {
+            "name": "minPrice",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 0
+            },
+            "description": "Minimum price filter"
+          },
+          {
+            "name": "maxPrice",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 0
+            },
+            "description": "Maximum price filter"
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Latitude for location-based search"
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Longitude for location-based search"
+          },
+          {
+            "name": "radius",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "default": 10
+            },
+            "description": "Search radius in kilometers"
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["createdAt", "currentPrice", "expiryDate", "name"],
+              "default": "createdAt"
+            },
+            "description": "Sort field"
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "desc"
+            },
+            "description": "Sort order"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ingredients retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "ingredients": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Ingredient"
+                          }
+                        },
+                        "pagination": {
+                          "type": "object",
+                          "properties": {
+                            "currentPage": {
+                              "type": "integer"
+                            },
+                            "totalPages": {
+                              "type": "integer"
+                            },
+                            "totalItems": {
+                              "type": "integer"
+                            },
+                            "hasNext": {
+                              "type": "boolean"
+                            },
+                            "hasPrev": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Ingredients"],
+        "summary": "Create new ingredient",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "category", "quantity", "unit", "basePrice", "expiryDate"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Fresh Tomatoes"
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": ["vegetables", "fruits", "grains", "spices", "dairy", "meat", "other"],
+                    "example": "vegetables"
+                  },
+                  "quantity": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 10
+                  },
+                  "unit": {
+                    "type": "string",
+                    "enum": ["kg", "grams", "liters", "pieces", "dozen"],
+                    "example": "kg"
+                  },
+                  "basePrice": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 50
+                  },
+                  "currentPrice": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 50
+                  },
+                  "expiryDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-08-15T00:00:00.000Z"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Fresh red tomatoes perfect for cooking"
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "example": ["https://example.com/tomato.jpg"]
+                  },
+                  "minOrderQuantity": {
+                    "type": "number",
+                    "minimum": 1,
+                    "default": 1,
+                    "example": 1
+                  },
+                  "location": {
+                    "type": "object",
+                    "properties": {
+                      "address": {
+                        "type": "string",
+                        "example": "Market Street, Mumbai"
+                      },
+                      "coordinates": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "example": [72.8777, 19.0760]
+                      },
+                      "pincode": {
+                        "type": "string",
+                        "example": "400001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ingredient created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "ingredient": {
+                          "$ref": "#/components/schemas/Ingredient"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ingredients/{id}": {
+      "get": {
+        "tags": ["Ingredients"],
+        "summary": "Get ingredient by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Ingredient ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ingredient retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "ingredient": {
+                          "$ref": "#/components/schemas/Ingredient"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ingredient not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Ingredients"],
+        "summary": "Update ingredient",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Ingredient ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "quantity": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "currentPrice": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ingredient updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "ingredient": {
+                          "$ref": "#/components/schemas/Ingredient"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Not ingredient owner",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ingredient not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Ingredients"],
+        "summary": "Delete ingredient",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Ingredient ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ingredient deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Ingredient deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Not ingredient owner",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ingredient not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders": {
+      "get": {
+        "tags": ["Orders"],
+        "summary": "Get user orders",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["pending", "accepted", "rejected", "completed", "cancelled"]
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["purchases", "sales"]
+            },
+            "description": "Filter by order type - purchases (as buyer) or sales (as seller)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Orders retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "orders": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Order"
+                          }
+                        },
+                        "pagination": {
+                          "type": "object",
+                          "properties": {
+                            "currentPage": {
+                              "type": "integer"
+                            },
+                            "totalPages": {
+                              "type": "integer"
+                            },
+                            "totalItems": {
+                              "type": "integer"
+                            },
+                            "hasNext": {
+                              "type": "boolean"
+                            },
+                            "hasPrev": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
